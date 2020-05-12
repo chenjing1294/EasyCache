@@ -16,11 +16,14 @@
   所以要是你有个系统，高峰期一秒钟过来的请求有1万，那一个 MySQL 单机绝对会死掉。你这个时候就只能上缓存，把很多数据放缓存。缓存功能简单，说白了就是 key-value 式操作，单机支撑的并发量轻松一秒几万十几万。单机承载并发量是 MySQL 单机的几十倍。
 
 ## EasyCache的特点
-- 通过少量的配置 annotation 注释即可使得既有代码支持缓存
-- 支持开箱即用 Out-Of-The-Box，即不用安装和部署额外第三方组件即可使用缓存
+- 通过少量的注解即可使得既有代码支持缓存
+- 支持开箱即用
 - 支持 Spring Express Language，能使用对象的任何属性或者方法来定义缓存的 key 和 condition
-- 支持 AspectJ，并通过其实现任何方法的缓存支持
 - 支持自定义 key 和自定义缓存管理器，具有相当的灵活性和扩展性
+
+## EasyCache与Spring Cache的比较
+- EasyCache的键支持模糊查询
+- EasyCache的键支持过期时间
 
 ## 如果不采用基于注解的缓存模式会怎样？
 这里先展示一个完全自定义的缓存实现，即不用任何第三方的组件来实现某种对象的内存缓存。
@@ -160,7 +163,7 @@ get from cache...somebody// 从缓存加载
 ### 引入依赖
 ```xml
 <dependency>
-    <groupId>com.github.chenjing</groupId>
+    <groupId>net.gvsun.utils</groupId>
     <artifactId>EasyCache</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 </dependency>
@@ -231,6 +234,20 @@ public void updateUser(String username) {
 |beforeInvocation|是否在方法执行前就清空，缺省为 false，如果指定为 true，则在方法还没有执行的时候就清空缓存，缺省情况下，如果方法执行抛出异常，则不会清空缓存|
 
 ## EasyCache的设计思想
+
+## 代理
+EasyCache的关键原理就是spring AOP，通过 spring AOP，其实现了在方法调用前、调用后获取方法的入参和返回值，进而实现了缓存的逻辑。我们来看一下下面这个图：
+
+![原始方法调用图](image001.jpg)
+
+上图显示，当客户端“Calling code”调用一个普通类 Plain Object 的 foo() 方法的时候，是直接作用在 pojo 类自身对象上的，客户端拥有的是被调用者的直接的引用。
+
+而 EasyCache 利用了 Spring AOP 的动态代理技术，即当客户端尝试调用 pojo 的 foo（）方法的时候，给他的不是 pojo 自身的引用，而是一个动态生成的代理类：
+
+![动态代理调用图](image002.jpg)
+
+如上图所示，这个时候，实际客户端拥有的是一个代理的引用，那么在调用 foo() 方法的时候，会首先调用 proxy 的 foo() 方法，这个时候 proxy 可以整体控制实际的 pojo.foo() 方法的入参和返回值，比如缓存结果，比如直接略过执行实际的 foo() 方法等，都是可以轻松做到的。
+
 ### 委托
 
 由于锁的排他性，如果短时间内有大量线程访问同一个键，后续线程的访问操作将
@@ -260,9 +277,5 @@ public User getUserByUsername(String username) throws InterruptedException {
 }
 ```
 我们对`testService.getUserByUsername()`做了缓存处理，在没有命中缓存的情况下， 假设`testService.getUserByUsername()`方法访问数据库所消耗的时间为3s，当首次运行上面的代码时，第一个请求的线程：查看缓存中是否有数据并且没有过期 -> 没有发现缓存，调用被缓存注解的方法去数据源中获取结果数据 -> 将获取到的数据写入缓存。这一系列过程将在超过3s的时间内被完成。而同时，在第一个线程运行期间，后续的199个线程也会对同一个键进行操作，如果后续的线程没有把工作委托给第一个线程，那么后续的199个线程将也会从数据源中获取数据（假设这199个线程在3s只能即可全部运行起来），但这是没有必要的开销。
-
-## EasyCache与Spring Cache的比较
-- EasyCache的键支持模糊查询
-- EasyCache的键支持过期时间
 
 ### 缓存的自动刷新

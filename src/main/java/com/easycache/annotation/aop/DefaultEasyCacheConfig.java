@@ -9,12 +9,14 @@ import com.easycache.manager.factory.LRUCacheManagerFactory;
 import com.easycache.serializer.compressor.impl.CommonCompressor;
 import com.easycache.serializer.impl.JacksonJsonSerializer;
 import com.easycache.serializer.impl.StringSerializer;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.Protocol;
 
 /**
  * EasyCache的默认配置
@@ -28,8 +30,9 @@ public class DefaultEasyCacheConfig {
     @Bean
     @Qualifier("default")
     public JedisPool defaultJedisPool(@Value("${spring.redis.host:localhost}") String host,
-                                      @Value("${spring.redis.port:6379}") int port) {
-        return new JedisPool(host, port);
+                                      @Value("${spring.redis.port:6379}") int port,
+                                      @Value("${spring.redis.password:#{null}}") String password) {
+        return new JedisPool(new GenericObjectPoolConfig(), host, port, Protocol.DEFAULT_TIMEOUT, password);
     }
 
     @Bean
