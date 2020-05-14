@@ -20,7 +20,7 @@ public abstract class CacheManagerFactory {
     private CacheManager createProxy(CacheManager cacheManager) {
         CacheManagerInvocationHandler handler = new CacheManagerInvocationHandler(cacheManager);
         return (CacheManager) Proxy.newProxyInstance(
-                ClassLoader.getSystemClassLoader(),
+                getClass().getClassLoader(),
                 new Class[]{CacheManager.class},
                 handler);
     }

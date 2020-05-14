@@ -1,3 +1,5 @@
+[我只想看用法](##使用EasyCache简化缓存管理)
+
 ## 为什么要使用缓存
 缓存主要有两个用途：**高性能**和**高并发**。
 
@@ -172,10 +174,23 @@ get from cache...somebody// 从缓存加载
 ### 启动EasyCache
 ```java
 @SpringBootApplication
-@EnableEasyCache
+@EnableEasyCache //启动EasyCache
 public class MyApplication {
     public static void main(String[] args) {
         SpringApplication.run(Oauth2Application.class, args);
+    }
+}
+```
+下面的配置是可选的，给你自己的项目添加一个命名空间，这样可以防止你定义的键和其他项目的键发生冲突：
+```java
+@Configuration
+public class CachingConfig {
+    @Bean
+    @Primary
+    public EasyCacheConfig easyCacheConfig() {//EasyCache的全局配置
+        EasyCacheConfig easyCacheConfig = new EasyCacheConfig();
+        easyCacheConfig.setNamespace("OAuth2");
+        return easyCacheConfig;
     }
 }
 ```
@@ -186,13 +201,28 @@ public class MyApplication {
 @Service
 public class TestService {
     @Cache(key = "'user-' + #args[0]")
-    public User getUserByUsername(String username) throws InterruptedException {
+    public User getUserByUsername(String username) {
         //从数据库里查询出用户数据
         return user;
     }
 }
 ```
 当系统首次调用这个方法时，由于在缓存中找不到数据，就会执行该方法，然后把得到的数据放入缓存，当下一次再相同的参数调用这个方法时，就会从缓存中获取数据，而不是再次执行这个方法。
+
+像上面那样设置缓存的键是可以的，但是如果我们有很多username，将会导致redis里有很多的key；更推荐的一种做法是把方法名作为key，把参数作为hkey：
+```java
+@Service
+public class TestService {
+    @Cache(key = "'getUserByUsername'", hkey = "#args[0]")
+    public User getUserByUsername(String username) {
+        //从数据库里查询出用户数据
+        return user;
+    }
+}
+```
+`@Cache`还支持过期时间，和按条件进行缓存。[点击查看详情](###@Cache、@CacheDelete注释介绍)
+
+`key`和`hkey`是支持SpringEl表达式，例如：`#args[0]`表示调用方法时传入的第一个参数；`retVal`表示方法的返回值；
 
 ### 如何清空缓存？
 当我们更新用户的数据时，需要清除旧的缓存：
