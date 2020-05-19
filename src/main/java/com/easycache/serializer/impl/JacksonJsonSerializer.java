@@ -21,13 +21,23 @@ import java.lang.reflect.Type;
 public class JacksonJsonSerializer implements Serializer<Object> {
     private final ObjectMapper MAPPER;
     private final Compressor compressor;
+    private int threshold = 1024;   //压缩阈值
 
     public JacksonJsonSerializer() {
-        this(null);
+        this.compressor = null;
+        MAPPER = new ObjectMapper();
+        MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
     public JacksonJsonSerializer(Compressor compressor) {
         this.compressor = compressor;
+        MAPPER = new ObjectMapper();
+        MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
+
+    public JacksonJsonSerializer(Compressor compressor, int threshold) {
+        this.compressor = compressor;
+        this.threshold = threshold;
         MAPPER = new ObjectMapper();
         MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
@@ -54,7 +64,19 @@ public class JacksonJsonSerializer implements Serializer<Object> {
     public byte[] serialize(Object obj) throws IOException {
         if (compressor != null) {
             try {
-                return compressor.compress(MAPPER.writeValueAsBytes(obj));
+                byte[] src = MAPPER.writeValueAsBytes(obj);
+                if (src.length > threshold) {
+                    byte[] compress = compressor.compress(src);
+                    byte[] dest = new byte[compress.length + 1];
+                    System.arraycopy(compress, 0, dest, 1, compress.length);
+                    dest[0] = 0x1;
+                    return dest;
+                } else {
+                    byte[] dest = new byte[src.length + 1];
+                    System.arraycopy(src, 0, dest, 1, src.length);
+                    dest[0] = 0x0;
+                    return dest;
+                }
             } catch (CompressorException e) {
                 throw new RuntimeException(e);
             }
@@ -70,7 +92,16 @@ public class JacksonJsonSerializer implements Serializer<Object> {
         JavaType javaType = getJavaType(returnType);
         if (compressor != null) {
             try {
-                return MAPPER.readValue(compressor.decompress(bytes), javaType);
+                byte[] uncompress = null;
+                byte[] dest = new byte[bytes.length - 1];
+                if (bytes[0] == 0x1) {//压缩格式
+                    System.arraycopy(bytes, 1, dest, 0, bytes.length - 1);
+                    uncompress = compressor.decompress(dest);
+                } else {//非压缩格式
+                    System.arraycopy(bytes, 1, dest, 0, bytes.length - 1);
+                    uncompress = dest;
+                }
+                return MAPPER.readValue(uncompress, javaType);
             } catch (CompressorException e) {
                 throw new RuntimeException(e);
             }

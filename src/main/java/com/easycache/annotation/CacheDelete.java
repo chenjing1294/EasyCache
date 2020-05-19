@@ -33,4 +33,9 @@ public @interface CacheDelete {
      * 则在方法还没有执行的时候就清空缓存，缺省情况下，如果方法执行抛出异常，则不会清空缓存
      */
     boolean beforeInvocation() default false;
+
+    /**
+     * 该键所属的命名空间，如果设置，则EasyCacheConfig中配置的命名空间失效
+     */
+    String namespace() default "";
 }

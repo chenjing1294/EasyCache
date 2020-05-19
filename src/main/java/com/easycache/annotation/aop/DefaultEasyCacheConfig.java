@@ -37,8 +37,8 @@ public class DefaultEasyCacheConfig {
 
     @Bean
     @Qualifier("default")
-    public com.easycache.EasyCacheConfig defaultCacheConfig() {
-        com.easycache.EasyCacheConfig easyCacheConfig = new com.easycache.EasyCacheConfig();
+    public EasyCacheConfig defaultCacheConfig() {
+        com.easycache.EasyCacheConfig easyCacheConfig = new EasyCacheConfig();
         easyCacheConfig.setNamespace("EasyCache");
         return easyCacheConfig;
     }

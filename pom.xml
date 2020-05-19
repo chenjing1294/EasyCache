@@ -6,7 +6,7 @@
 
     <groupId>com.github.chenjing</groupId>
     <artifactId>EasyCache</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.2-SNAPSHOT</version>
 
     <properties>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -33,11 +33,6 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>[2.9.10.4,)</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-nop</artifactId>
-            <version>1.7.2</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>

@@ -11,6 +11,7 @@ import com.easycache.util.A;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.Signature;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.util.StringUtils;
 import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 
 import java.io.IOException;
@@ -80,6 +81,13 @@ public class AspectjAopInterceptor {
             e = t;
             t.printStackTrace();
         } finally {
+            String namespace = cacheDelete.namespace();
+            if (StringUtils.isEmpty(namespace)) {
+                namespace = cacheManager.getEasyCacheConfig().getNamespace();
+            }
+            if (StringUtils.isEmpty(namespace)) {
+                namespace = null;
+            }
             if ((e == null) || (e != null && beforeInvocation)) {
                 boolean _condition = springELParser.getELValue(condition, target, args, retVal, Boolean.class);
                 if (_condition) {
@@ -91,7 +99,7 @@ public class AspectjAopInterceptor {
                             if (hk.length() > 0) {
                                 _hk = springELParser.getELValue(hk, target, args, retVal, String.class);
                             }
-                            CacheKey cacheKey = new CacheKey(cacheManager.getEasyCacheConfig().getNamespace(), _k, _hk);
+                            CacheKey cacheKey = new CacheKey(namespace, _k, _hk);
                             if (A.isBatchDeleteKey(cacheKey)) {
                                 cacheManager.batchDelete(cacheKey);
                             } else {
@@ -114,11 +122,18 @@ public class AspectjAopInterceptor {
             CacheKey cacheKey = null;
             int expire = cache.expire();
             String key = springELParser.getELValue(cache.key(), target, args, res, String.class);
+            String namespace = cache.namespace();
+            if (StringUtils.isEmpty(namespace)) {
+                namespace = cacheManager.getEasyCacheConfig().getNamespace();
+            }
+            if (StringUtils.isEmpty(namespace)) {
+                namespace = null;
+            }
             if (cache.hkey().length() > 0) {
                 String hkey = springELParser.getELValue(cache.hkey(), target, args, res, String.class);
-                cacheKey = new CacheKey(cacheManager.getEasyCacheConfig().getNamespace(), key, hkey);
+                cacheKey = new CacheKey(namespace, key, hkey);
             } else {
-                cacheKey = new CacheKey(cacheManager.getEasyCacheConfig().getNamespace(), key);
+                cacheKey = new CacheKey(namespace, key);
             }
             CacheValue cacheValue = new CacheValue(res, expire);
             cacheValue.setLastLoadTime(System.currentTimeMillis());
@@ -136,13 +151,19 @@ public class AspectjAopInterceptor {
             Object target = pjp.getTarget();
             Object res = new Object();
             CacheKey cacheKey = null;
-            int expire = cache.expire();
             String key = springELParser.getELValue(cache.key(), target, args, res, String.class);
             String hkey = null;
             if (cache.hkey().length() > 0) {
                 hkey = springELParser.getELValue(cache.hkey(), target, args, res, String.class);
             }
-            cacheKey = new CacheKey(cacheManager.getEasyCacheConfig().getNamespace(), key, hkey);
+            String namespace = cache.namespace();
+            if (StringUtils.isEmpty(namespace)) {
+                namespace = cacheManager.getEasyCacheConfig().getNamespace();
+            }
+            if (StringUtils.isEmpty(namespace)) {
+                namespace = null;
+            }
+            cacheKey = new CacheKey(namespace, key, hkey);
 
             Signature signature = pjp.getSignature();
             MethodSignature methodSignature = (MethodSignature) signature;

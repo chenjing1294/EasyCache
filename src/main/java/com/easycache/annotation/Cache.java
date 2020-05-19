@@ -39,4 +39,9 @@ public @interface Cache {
      * 缓存的操作类型默认是READ_WRITE
      */
     CacheOperateType cacheOperateType() default CacheOperateType.READ_WRITE;
+
+    /**
+     * 该键所属的命名空间，如果设置，则EasyCacheConfig中配置的命名空间失效
+     */
+    String namespace() default "";
 }
