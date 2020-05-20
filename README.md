@@ -1,4 +1,5 @@
-[我只想看用法](##使用EasyCache简化缓存管理)
+[【我只想看用法】](#使用EasyCache简化缓存管理)
+[【版本更新列表】](#版本更新列表)
 
 ## 为什么要使用缓存
 缓存主要有两个用途：**高性能**和**高并发**。
@@ -220,7 +221,7 @@ public class TestService {
     }
 }
 ```
-`@Cache`还支持过期时间，和按条件进行缓存。[点击查看详情](###@Cache、@CacheDelete注释介绍)
+`@Cache`还支持过期时间，和按条件进行缓存。[【点击查看详情】](#@Cache、@CacheDelete注释介绍)
 
 `key`和`hkey`是支持SpringEl表达式，例如：`#args[0]`表示调用方法时传入的第一个参数；`retVal`表示方法的返回值；
 
@@ -253,7 +254,7 @@ public void updateUser(String username) {
 |expire|缓存的过期时间，默认永不过期|
 |key|自定义的缓存key，支持SpringEL表达式|
 |hkey|设置哈希表中的字段，如果设置此项，则用哈希表进行存储，支持SpringEL表达式|
-|condition|缓存的条件表达式，如果得到的值是 false 的话，不会将缓存应用到方法调用上|
+|condition|缓存的条件表达式，如果得到的值是 false 的话，不会将缓存应用到方法调用上。默认为true|
 |cacheOperateType|缓存的操作类型默认是READ_WRITE|
 
 |@CacheDelete包含的属性|描述|
@@ -309,3 +310,29 @@ public User getUserByUsername(String username) throws InterruptedException {
 我们对`testService.getUserByUsername()`做了缓存处理，在没有命中缓存的情况下， 假设`testService.getUserByUsername()`方法访问数据库所消耗的时间为3s，当首次运行上面的代码时，第一个请求的线程：查看缓存中是否有数据并且没有过期 -> 没有发现缓存，调用被缓存注解的方法去数据源中获取结果数据 -> 将获取到的数据写入缓存。这一系列过程将在超过3s的时间内被完成。而同时，在第一个线程运行期间，后续的199个线程也会对同一个键进行操作，如果后续的线程没有把工作委托给第一个线程，那么后续的199个线程将也会从数据源中获取数据（假设这199个线程在3s只能即可全部运行起来），但这是没有必要的开销。
 
 ### 缓存的自动刷新
+
+
+# 版本更新列表
+## 1.0.1-SNAPSHOT
+去除日志框架
+
+## 1.1.0-SNAPSHOT
+1. 修复bug，为注解添加新属性：
+    |@Cache包含的属性|描述|
+    |-|-|
+    |expire|缓存的过期时间，默认永不过期|
+    |key|自定义的缓存key，支持SpringEL表达式|
+    |hkey|设置哈希表中的字段，如果设置此项，则用哈希表进行存储，支持SpringEL表达式|
+    |condition|缓存的条件表达式，如果得到的值是 false 的话，不会将缓存应用到方法调用上。默认为true|
+    |cacheOperateType|缓存的操作类型默认是READ_WRITE|
+    |*namespace*|该键所属的命名空间，如果设置，则EasyCacheConfig中配置的命名空间失效|
+
+    |@CacheDelete包含的属性|描述|
+    |-|-|
+    |condition|缓存的条件表达式，如果得到的值是 false 的话，不会将缓存应用到方法调用上|
+    |keys|要删除的缓存的键的数组（键支持通配符：* ? []）|
+    |hkeys|设置哈希表中的字段，如果设置此项，则删除哈希表中指定的项，支持SpringEL表达式|
+    |beforeInvocation|是否在方法执行前就清空，缺省为 false，如果指定为 true，则在方法还没有执行的时候就清空缓存，缺省情况下，如果方法执行抛出异常，则不会清空缓存|
+    |*namespace*|该键所属的命名空间，如果设置，则EasyCacheConfig中配置的命名空间失效|
+
+2. 把数据缓存到Redis时支持配置压缩阈值（默认为1024字节，超过则压缩，否则不压缩）

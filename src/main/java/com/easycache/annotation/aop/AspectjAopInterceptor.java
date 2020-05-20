@@ -92,14 +92,22 @@ public class AspectjAopInterceptor {
                 boolean _condition = springELParser.getELValue(condition, target, args, retVal, Boolean.class);
                 if (_condition) {
                     for (String k : keys) {
-                        for (String hk : hkeys) {
-                            String _k = springELParser.getELValue(k, target, args, retVal, String.class);
-
-                            String _hk = null;
-                            if (hk.length() > 0) {
-                                _hk = springELParser.getELValue(hk, target, args, retVal, String.class);
+                        String _k = springELParser.getELValue(k, target, args, retVal, String.class);
+                        if (hkeys.length > 0) {
+                            for (String hk : hkeys) {
+                                String _hk = null;
+                                if (hk.length() > 0) {
+                                    _hk = springELParser.getELValue(hk, target, args, retVal, String.class);
+                                }
+                                CacheKey cacheKey = new CacheKey(namespace, _k, _hk);
+                                if (A.isBatchDeleteKey(cacheKey)) {
+                                    cacheManager.batchDelete(cacheKey);
+                                } else {
+                                    cacheManager.delete(cacheKey);
+                                }
                             }
-                            CacheKey cacheKey = new CacheKey(namespace, _k, _hk);
+                        } else {
+                            CacheKey cacheKey = new CacheKey(namespace, _k);
                             if (A.isBatchDeleteKey(cacheKey)) {
                                 cacheManager.batchDelete(cacheKey);
                             } else {
