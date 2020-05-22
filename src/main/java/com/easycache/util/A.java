@@ -16,4 +16,13 @@ public class A {
     private static boolean containWildcard(String s) {
         return (s.contains("?") || s.contains("*") || (s.contains("[") && s.contains("]")));
     }
+
+    /**
+     * 把通配符转换为正则表达式
+     *
+     * @param s 包含通配符的字符串
+     */
+    public static String getRegex(String s) {
+        return s.replaceAll("\\*", ".*").replaceAll("\\?", ".");
+    }
 }

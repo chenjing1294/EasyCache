@@ -1,7 +1,7 @@
-[【我只想看用法】](#使用EasyCache简化缓存管理)
+[【我只想看用法】](#使用easycache简化缓存管理)
 [【版本更新列表】](#版本更新列表)
 
-## 为什么要使用缓存
+# 为什么要使用缓存
 缓存主要有两个用途：**高性能**和**高并发**。
 
 - 高性能
@@ -18,17 +18,17 @@
 
   所以要是你有个系统，高峰期一秒钟过来的请求有1万，那一个 MySQL 单机绝对会死掉。你这个时候就只能上缓存，把很多数据放缓存。缓存功能简单，说白了就是 key-value 式操作，单机支撑的并发量轻松一秒几万十几万。单机承载并发量是 MySQL 单机的几十倍。
 
-## EasyCache的特点
+# EasyCache的特点
 - 通过少量的注解即可使得既有代码支持缓存
 - 支持开箱即用
 - 支持 Spring Express Language，能使用对象的任何属性或者方法来定义缓存的 key 和 condition
 - 支持自定义 key 和自定义缓存管理器，具有相当的灵活性和扩展性
 
-## EasyCache与Spring Cache的比较
+# EasyCache与Spring Cache的比较
 - EasyCache的键支持模糊查询
 - EasyCache的键支持过期时间
 
-## 如果不采用基于注解的缓存模式会怎样？
+# 如果不采用基于注解的缓存模式会怎样？
 这里先展示一个完全自定义的缓存实现，即不用任何第三方的组件来实现某种对象的内存缓存。
 
 场景是：对一个账号查询方法做缓存，以账号名称为 key，账号对象为 value，当以相同的账号名称查询账号的时候，直接从缓存中返回结果，否则更新缓存。账号查询服务还支持 reload 缓存（即清空缓存）。
@@ -161,18 +161,18 @@ get from cache...somebody// 从缓存加载
 
 如果你的代码中有上述代码的影子，那么你可以考虑按照下面的介绍来优化一下你的代码结构了，也可以说是简化，你会发现，你的代码会变得优雅的多！
 
-## 使用EasyCache简化缓存管理
+# 使用EasyCache简化缓存管理
 
-### 引入依赖
+## 引入依赖
 ```xml
 <dependency>
     <groupId>net.gvsun.utils</groupId>
     <artifactId>EasyCache</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.1.1-SNAPSHOT</version>
 </dependency>
 ```
 
-### 启动EasyCache
+## 启动EasyCache
 ```java
 @SpringBootApplication
 @EnableEasyCache //启动EasyCache
@@ -196,7 +196,7 @@ public class CachingConfig {
 }
 ```
 
-### 在需要缓存的方法上添加注解
+## 在需要缓存的方法上添加注解
 假设我们有一个方法getUserByUsername()，这是一个非常耗时的操作，现在我们把它的结果进行缓存：
 ```java
 @Service
@@ -225,7 +225,7 @@ public class TestService {
 
 `key`和`hkey`是支持SpringEl表达式，例如：`#args[0]`表示调用方法时传入的第一个参数；`retVal`表示方法的返回值；
 
-### 如何清空缓存？
+## 如何清空缓存？
 当我们更新用户的数据时，需要清除旧的缓存：
 ```java
 @Service
@@ -239,7 +239,7 @@ public class TestService {
 }
 ```
 
-### 如何按照条件操作缓存？
+## 如何按照条件操作缓存？
 有时候我们需要根据一定的条件来决定是否需要清除缓存，下面是一个例子，如果username是以2开头的则清除缓存：
 ```java
 @CacheDelete(keys = "'user-' + #args[0]", condition = "#args[0].startsWith('2')")
@@ -248,7 +248,7 @@ public void updateUser(String username) {
 }
 ```
 
-### @Cache、@CacheDelete注释介绍
+# @Cache、@CacheDelete注释介绍
 |@Cache包含的属性|描述|
 |-|-|
 |expire|缓存的过期时间，默认永不过期|
@@ -264,7 +264,7 @@ public void updateUser(String username) {
 |hkeys|设置哈希表中的字段，如果设置此项，则删除哈希表中指定的项，支持SpringEL表达式|
 |beforeInvocation|是否在方法执行前就清空，缺省为 false，如果指定为 true，则在方法还没有执行的时候就清空缓存，缺省情况下，如果方法执行抛出异常，则不会清空缓存|
 
-## EasyCache的设计思想
+# EasyCache的设计思想
 
 ## 代理
 EasyCache的关键原理就是spring AOP，通过 spring AOP，其实现了在方法调用前、调用后获取方法的入参和返回值，进而实现了缓存的逻辑。我们来看一下下面这个图：
@@ -279,7 +279,7 @@ EasyCache的关键原理就是spring AOP，通过 spring AOP，其实现了在�
 
 如上图所示，这个时候，实际客户端拥有的是一个代理的引用，那么在调用 foo() 方法的时候，会首先调用 proxy 的 foo() 方法，这个时候 proxy 可以整体控制实际的 pojo.foo() 方法的入参和返回值，比如缓存结果，比如直接略过执行实际的 foo() 方法等，都是可以轻松做到的。
 
-### 委托
+## 委托
 
 由于锁的排他性，如果短时间内有大量线程访问同一个键，后续线程的访问操作将
 被委托给第一个发起访问的线程来完成。（这里的“短时间内”代表的是在第一个线程还未完成访问操作时，又有新的线程试图访问同一个键）。这可以有效的预防缓存击穿问题。
@@ -309,7 +309,7 @@ public User getUserByUsername(String username) throws InterruptedException {
 ```
 我们对`testService.getUserByUsername()`做了缓存处理，在没有命中缓存的情况下， 假设`testService.getUserByUsername()`方法访问数据库所消耗的时间为3s，当首次运行上面的代码时，第一个请求的线程：查看缓存中是否有数据并且没有过期 -> 没有发现缓存，调用被缓存注解的方法去数据源中获取结果数据 -> 将获取到的数据写入缓存。这一系列过程将在超过3s的时间内被完成。而同时，在第一个线程运行期间，后续的199个线程也会对同一个键进行操作，如果后续的线程没有把工作委托给第一个线程，那么后续的199个线程将也会从数据源中获取数据（假设这199个线程在3s只能即可全部运行起来），但这是没有必要的开销。
 
-### 缓存的自动刷新
+## 缓存的自动刷新
 
 
 # 版本更新列表
@@ -318,21 +318,25 @@ public User getUserByUsername(String username) throws InterruptedException {
 
 ## 1.1.0-SNAPSHOT
 1. 修复bug，为注解添加新属性：
-    |@Cache包含的属性|描述|
-    |-|-|
-    |expire|缓存的过期时间，默认永不过期|
-    |key|自定义的缓存key，支持SpringEL表达式|
-    |hkey|设置哈希表中的字段，如果设置此项，则用哈希表进行存储，支持SpringEL表达式|
-    |condition|缓存的条件表达式，如果得到的值是 false 的话，不会将缓存应用到方法调用上。默认为true|
-    |cacheOperateType|缓存的操作类型默认是READ_WRITE|
-    |*namespace*|该键所属的命名空间，如果设置，则EasyCacheConfig中配置的命名空间失效|
 
-    |@CacheDelete包含的属性|描述|
-    |-|-|
-    |condition|缓存的条件表达式，如果得到的值是 false 的话，不会将缓存应用到方法调用上|
-    |keys|要删除的缓存的键的数组（键支持通配符：* ? []）|
-    |hkeys|设置哈希表中的字段，如果设置此项，则删除哈希表中指定的项，支持SpringEL表达式|
-    |beforeInvocation|是否在方法执行前就清空，缺省为 false，如果指定为 true，则在方法还没有执行的时候就清空缓存，缺省情况下，如果方法执行抛出异常，则不会清空缓存|
-    |*namespace*|该键所属的命名空间，如果设置，则EasyCacheConfig中配置的命名空间失效|
+|@Cache包含的属性|描述|
+|-|-|
+|expire|缓存的过期时间，默认永不过期|
+|key|自定义的缓存key，支持SpringEL表达式|
+|hkey|设置哈希表中的字段，如果设置此项，则用哈希表进行存储，支持SpringEL表达式|
+|condition|缓存的条件表达式，如果得到的值是 false 的话，不会将缓存应用到方法调用上。默认为true|
+|cacheOperateType|缓存的操作类型默认是READ_WRITE|
+|*namespace*|该键所属的命名空间，如果设置，则EasyCacheConfig中配置的命名空间失效|
+
+|@CacheDelete包含的属性|描述|
+|-|-|
+|condition|缓存的条件表达式，如果得到的值是 false 的话，不会将缓存应用到方法调用上|
+|keys|要删除的缓存的键的数组（键支持通配符：* ? []）|
+|hkeys|设置哈希表中的字段，如果设置此项，则删除哈希表中指定的项，支持SpringEL表达式|
+|beforeInvocation|是否在方法执行前就清空，缺省为 false，如果指定为 true，则在方法还没有执行的时候就清空缓存，缺省情况下，如果方法执行抛出异常，则不会清空缓存|
+|*namespace*|该键所属的命名空间，如果设置，则EasyCacheConfig中配置的命名空间失效|
 
 2. 把数据缓存到Redis时支持配置压缩阈值（默认为1024字节，超过则压缩，否则不压缩）
+
+## 1.1.1-SNAPSHOT
+1. 修复@CacheDelete批量删除bug

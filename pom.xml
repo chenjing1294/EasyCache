@@ -6,7 +6,7 @@
 
     <groupId>com.github.chenjing</groupId>
     <artifactId>EasyCache</artifactId>
-    <version>1.1.0-SNAPSHOT</version>
+    <version>1.1.1-SNAPSHOT</version>
 
     <properties>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -55,16 +55,17 @@
             <artifactId>aspectjrt</artifactId>
             <version>1.8.10</version>
         </dependency>
-        <!--<dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-            <version>2.13.2</version>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-nop</artifactId>
+            <version>1.7.2</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>2.13.2</version>
-        </dependency>-->
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.2.4</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -84,6 +85,28 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <!--<plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>1.2.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>com.easycache.util.B</mainClass>
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>-->
         </plugins>
     </build>
 </project>

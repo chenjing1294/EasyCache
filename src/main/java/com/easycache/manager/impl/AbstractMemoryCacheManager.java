@@ -4,6 +4,7 @@ import com.easycache.CacheKey;
 import com.easycache.CacheValue;
 import com.easycache.EasyCacheConfig;
 import com.easycache.manager.CacheManager;
+import com.easycache.util.A;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -69,8 +70,8 @@ public abstract class AbstractMemoryCacheManager implements CacheManager {
     @Override
     public void batchDelete(CacheKey pattern) throws IOException {
         try {
-            String p = pattern.getKey();
-            Pattern compile = Pattern.compile(p);
+            String regexKey = A.getRegex(pattern.getKey());
+            Pattern compile = Pattern.compile(regexKey);
             List<CacheKey> dels = new ArrayList<>();
             getStore().forEach((k, v) -> {
                 String key = k.getKey();

@@ -5,6 +5,7 @@ import com.easycache.CacheValue;
 import com.easycache.EasyCacheConfig;
 import com.easycache.manager.CacheManager;
 import com.easycache.serializer.Serializer;
+import com.easycache.util.A;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
@@ -148,6 +149,7 @@ public class JedisCacheManager implements CacheManager {
                         for (byte[] hk : hkeys) {
                             String _hk = new String(hk, keySerializer.getCharset());
                             String _sk = new String(sk, keySerializer.getCharset());
+                            _sk = A.getRegex(_sk);
                             Pattern compile = Pattern.compile(_sk);
                             Matcher matcher = compile.matcher(_hk);
                             if (matcher.matches()) {
