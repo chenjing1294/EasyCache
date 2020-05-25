@@ -44,6 +44,7 @@ public class DefaultEasyCacheConfig {
     }
 
     @Bean
+    @Qualifier("default")
     public CacheManager easyCacheManager(EasyCacheConfig easyCacheConfig, JedisPool jedisPool) {
         CacheManagerFactory f1 = new JedisCacheManagerFactory(
                 jedisPool,
@@ -58,6 +59,7 @@ public class DefaultEasyCacheConfig {
     }
 
     @Bean
+    @Qualifier("default")
     public AspectjAopInterceptor aspectjAopInterceptor(CacheManager cacheManager) {
         return new AspectjAopInterceptor(cacheManager, new SpringELParser());
     }
