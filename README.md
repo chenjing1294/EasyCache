@@ -340,3 +340,21 @@ public User getUserByUsername(String username) throws InterruptedException {
 
 ## 1.1.1-SNAPSHOT
 1. 修复@CacheDelete批量删除bug
+
+## 1.1.2-SNAPSHOT
+1. 优化
+
+## 1.2.2-SNAPSHOT
+可以单独为EasyCache指定Redis配置，不共用Spring提供的配置。
+配置的搜索顺序如下：
+1. 如果发现在Spring容器中发现`EasyCacheConfig` bean，则使用该bean提供的配置。
+1. 如果在类路径下发现`easyCache.properties`，则是用该配置文件，该配置文件的格式如下：
+    ```
+    #easyCache.redis.database=${redis_database:3}     #使用哪个db？
+    #easyCache.redis.host=localhost #redis地址是什么？默认localhost
+    #easyCache.redis.port=6379      #redis端口是什么？默认6379
+    #easyCache.redis.password=1234  #redis密码是什么？
+
+    #easyCache.namespace=EasyCache  #设置全局命名空间，默认EasyCache
+    ```
+3. 如果在第2步还是未读取到配置，则使用内部默认值。

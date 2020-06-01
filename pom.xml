@@ -6,7 +6,7 @@
 
     <groupId>com.github.chenjing</groupId>
     <artifactId>EasyCache</artifactId>
-    <version>1.1.2-SNAPSHOT</version>
+    <version>1.2.2-SNAPSHOT</version>
 
     <properties>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>

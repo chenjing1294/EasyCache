@@ -1,0 +1,8 @@
+#设置缓存的数据放到哪个Redis库里
+easyCache.redis.database=${redis_database:1}
+easyCache.redis.host=${redis_host:localhost}
+easyCache.redis.port=${redis_port:6379}
+#easyCache.redis.password=${redis_password:1234}
+
+#设置全局命名空间
+easyCache.namespace=${easyCache_namespace:EasyCache}
