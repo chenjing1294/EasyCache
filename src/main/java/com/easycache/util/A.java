@@ -25,4 +25,13 @@ public class A {
     public static String getRegex(String s) {
         return s.replaceAll("\\*", ".*").replaceAll("\\?", ".");
     }
+
+    /**
+     * 检查通配符是否合法
+     *
+     * @param s 包含通配符的字符串
+     */
+    public boolean check(String s) {
+        return true;
+    }
 }

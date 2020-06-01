@@ -11,6 +11,8 @@ import com.easycache.util.A;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.Signature;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 
@@ -28,6 +30,7 @@ public class AspectjAopInterceptor {
     private final CacheManager cacheManager;
     private final SpringELParser springELParser;
     private final CacheHandler cacheHandler;
+    private final Logger logger = LoggerFactory.getLogger(AspectjAopInterceptor.class);
 
     public AspectjAopInterceptor(CacheManager cacheManager, SpringELParser springELParser) {
         this.cacheManager = cacheManager;

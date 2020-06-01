@@ -10,6 +10,8 @@ import com.easycache.serializer.compressor.impl.CommonCompressor;
 import com.easycache.serializer.impl.JacksonJsonSerializer;
 import com.easycache.serializer.impl.StringSerializer;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -27,8 +29,10 @@ import redis.clients.jedis.Protocol;
 @Configuration
 @EnableAspectJAutoProxy
 public class DefaultEasyCacheConfig {
+    private final Logger logger = LoggerFactory.getLogger(DefaultAOPConfig.class);
+
     @Bean
-    @Qualifier("default")
+    @Qualifier("defaultJedisPool")
     public JedisPool defaultJedisPool(@Value("${spring.redis.host:localhost}") String host,
                                       @Value("${spring.redis.port:6379}") int port,
                                       @Value("${spring.redis.password:#{null}}") String password) {
@@ -36,7 +40,7 @@ public class DefaultEasyCacheConfig {
     }
 
     @Bean
-    @Qualifier("default")
+    @Qualifier("defaultEasyCacheConfig")
     public EasyCacheConfig defaultCacheConfig() {
         com.easycache.EasyCacheConfig easyCacheConfig = new EasyCacheConfig();
         easyCacheConfig.setNamespace("EasyCache");
@@ -44,8 +48,8 @@ public class DefaultEasyCacheConfig {
     }
 
     @Bean
-    @Qualifier("default")
-    public CacheManager easyCacheManager(EasyCacheConfig easyCacheConfig, JedisPool jedisPool) {
+    @Qualifier("defaultEasyCacheManager")
+    public CacheManager defaultEasyCacheManager(EasyCacheConfig easyCacheConfig, JedisPool jedisPool) {
         CacheManagerFactory f1 = new JedisCacheManagerFactory(
                 jedisPool,
                 new StringSerializer(),
@@ -59,7 +63,6 @@ public class DefaultEasyCacheConfig {
     }
 
     @Bean
-    @Qualifier("default")
     public AspectjAopInterceptor aspectjAopInterceptor(CacheManager cacheManager) {
         return new AspectjAopInterceptor(cacheManager, new SpringELParser());
     }

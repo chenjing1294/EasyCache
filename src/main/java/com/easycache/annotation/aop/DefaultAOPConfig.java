@@ -48,7 +48,6 @@ public class DefaultAOPConfig {
         return null;
     }
 
-    //@AfterReturning(value = "del(cacheDelete)", argNames = "jp,cacheDelete, returnValue", returning = "returnValue")
     @Around(value = "cacheDeletePointcut(cacheDelete)", argNames = "pjp,cacheDelete")
     public Object cacheDelete(ProceedingJoinPoint pjp, CacheDelete cacheDelete) {
         try {

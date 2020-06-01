@@ -21,7 +21,7 @@ import java.lang.reflect.Type;
 public class JacksonJsonSerializer implements Serializer<Object> {
     private final ObjectMapper MAPPER;
     private final Compressor compressor;
-    private int threshold = 1024;   //压缩阈值
+    private int threshold = 1024 * 5;   //压缩阈值
 
     public JacksonJsonSerializer() {
         this.compressor = null;

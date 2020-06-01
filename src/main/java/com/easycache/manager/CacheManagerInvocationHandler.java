@@ -2,6 +2,8 @@ package com.easycache.manager;
 
 import com.easycache.CacheKey;
 import com.easycache.CacheValue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -17,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class CacheManagerInvocationHandler implements InvocationHandler {
     private final CacheManager cacheManager;
     private final ConcurrentHashMap<CacheKey, Process> processing = new ConcurrentHashMap<>();
+    private final Logger logger = LoggerFactory.getLogger(CacheManagerInvocationHandler.class);
 
     public CacheManagerInvocationHandler(CacheManager cacheManager) {
         this.cacheManager = cacheManager;
@@ -36,50 +39,44 @@ public class CacheManagerInvocationHandler implements InvocationHandler {
             if (process == null) {
                 Process firstProcess = new Process();
                 Process p = processing.putIfAbsent(cacheKey, firstProcess);
-                if (p != null) {
-                    //System.out.println("后续线程1>:" + Thread.currentThread().getName());
-                    //后续的线程
+                if (p != null) {//后续的线程
+                    logger.trace("后续线程1>:{}", Thread.currentThread().getName());
                     process = p;
                     synchronized (process) {
                         while (!process.isFirstFinished()) {
-                            //System.out.println("后续线程进入等待集1>:" + Thread.currentThread().getName());
-                            //放弃process锁，进入该条件的等待集
-                            process.wait();
+                            logger.trace("后续线程进入等待集1>:{}", Thread.currentThread().getName());
+                            process.wait();//放弃process锁，进入该条件的等待集
                         }
-                        //System.out.println("后续线程被唤醒1>:" + Thread.currentThread().getName());
+                        logger.trace("后续线程被唤醒1>:{}", Thread.currentThread().getName());
                         return process.getCacheValue();
                     }
-                } else {
-                    //System.out.println("第一个线程:" + Thread.currentThread().getName());
-                    //第一个线程
+                } else {//第一个线程
+                    logger.trace("第一个线程:{}", Thread.currentThread().getName());
                     process = firstProcess;
                     //Thread.sleep(2000);
                     synchronized (process) {
                         //Thread.sleep(2000);
                         try {
                             CacheValue res = (CacheValue) method.invoke(cacheManager, args);
-                            //System.out.println("第一个线程从缓存中得到结果:" + res);
+                            logger.trace("第一个线程从缓存中得到结果:{}", res);
                             process.setFirstFinished(true);
                             process.setCacheValue(res);
                             return res;
                         } finally {
                             processing.remove(cacheKey);
-                            //通知等待集中的线程
-                            //System.out.println("第一个线程通知其他线程:" + Thread.currentThread().getName());
-                            process.notifyAll();
+                            logger.trace("第一个线程通知其他线程:{}", Thread.currentThread().getName());
+                            process.notifyAll();//通知等待集中的线程
                         }
                     }
                 }
-            } else {
-                //System.out.println("后续线程2>:" + Thread.currentThread().getName());
-                //后续的线程
+            } else {//后续的线程
+                logger.trace("后续线程2>:{}", Thread.currentThread().getName());
                 synchronized (process) {
                     while (!process.isFirstFinished()) {
-                        //System.out.println("后续线程进入等待集2>:" + Thread.currentThread().getName());
-                        //放弃process锁，进入该条件的等待集
-                        process.wait();
+                        logger.trace("后续线程进入等待集2>:{}", Thread.currentThread().getName());
+                        process.wait();//放弃process锁，进入该条件的等待集
                     }
-                    //System.out.println("后续线程被唤醒2>:" + Thread.currentThread().getName());
+                    logger.trace("后续线程被唤醒2>:{}", Thread.currentThread().getName());
                     return process.getCacheValue();
                 }
             }
