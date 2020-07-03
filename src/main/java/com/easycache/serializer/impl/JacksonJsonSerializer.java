@@ -57,7 +57,11 @@ public class JacksonJsonSerializer implements Serializer<Object> {
         } else {
             //简单类型直接用该类构建JavaType
             Class cla = (Class) type;
-            return TypeFactory.defaultInstance().constructParametricType(cla, Object.class);
+            try {
+                return TypeFactory.defaultInstance().constructParametricType(cla, new JavaType[0]);
+            } catch (IllegalArgumentException e) {
+                return TypeFactory.defaultInstance().constructParametricType(cla, Object.class);
+            }
         }
     }
 
