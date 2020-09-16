@@ -156,7 +156,8 @@ public class JedisCacheManager implements CacheManager {
                                 hks.add(hk);
                             }
                         }
-                        jedis.hdel(i, hks.toArray(new byte[0][0]));
+                        if (hks.size() > 0)
+                            jedis.hdel(i, hks.toArray(new byte[0][0]));
                     }
                 }
             }
