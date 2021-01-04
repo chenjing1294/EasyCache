@@ -51,19 +51,20 @@ public class AspectjAopInterceptor {
             return pjp.proceed(args);
         }
         CacheOperateType cacheOperateType = cache.cacheOperateType();
+        Object result = null;
         if (cacheOperateType == CacheOperateType.WRITE) {//键的表达式里允许使用方法的返回值
-            return cacheHandler.write(pjp, cache);
+            result = cacheHandler.write(pjp, cache);
         }
         if (cacheOperateType == CacheOperateType.LOAD) {//忽略键的值
-            return cacheHandler.load(pjp, cache);
+            result = cacheHandler.load(pjp, cache);
         }
         if (cacheOperateType == CacheOperateType.READ) {//键的表达式里不允许使用方法的返回值
-            return cacheHandler.read(pjp, cache);
+            result = cacheHandler.read(pjp, cache);
         }
         if (cacheOperateType == CacheOperateType.READ_WRITE) {//键的表达式里不允许使用方法的返回值
-            return cacheHandler.read_write(pjp, cache);
+            result = cacheHandler.read_write(pjp, cache);
         }
-        return null;
+        return result;
     }
 
     /**
@@ -186,10 +187,14 @@ public class AspectjAopInterceptor {
         }
 
         protected Object read_write(ProceedingJoinPoint pjp, Cache cache) throws Throwable {
+            long start = System.currentTimeMillis();
             Object data = read(pjp, cache);
             if (data == null) {
-                return write(pjp, cache);
+                Object res = write(pjp, cache);
+                logger.debug("[{}] Missed cache, time consume: {}ms", pjp.getSignature(), System.currentTimeMillis() - start);
+                return res;
             } else {
+                logger.debug("[{}] Hit the cache, time consume: {}ms", pjp.getSignature(), System.currentTimeMillis() - start);
                 return data;
             }
         }
